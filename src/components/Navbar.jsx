@@ -1,7 +1,7 @@
 import React from 'react';
-import { Server, Upload, LogOut, Sun, Moon } from 'lucide-react';
+import { Server, Upload, LogOut, Sun, Moon, RefreshCw } from 'lucide-react';
 
-export default function Navbar({ user, serverConfig, theme, onToggleTheme, onOpenServerConfig, onOpenUploadModal, onLogout }) {
+export default function Navbar({ user, serverConfig, theme, onToggleTheme, onOpenServerConfig, onOpenUploadModal, onLogout, uploadState, onNavigateToUpload }) {
   return (
     <header style={{
       background: 'var(--bg-card)',
@@ -50,11 +50,34 @@ export default function Navbar({ user, serverConfig, theme, onToggleTheme, onOpe
           style={{ fontSize: '0.8125rem', padding: '6px 12px' }}
         >
           <Server size={14} color="var(--primary)" />
-          <span>Server: <strong>{serverConfig.hostname}</strong></span>
+          <span>Server: <strong>{serverConfig.machineName ? `${serverConfig.machineName} (${serverConfig.hostname})` : serverConfig.hostname}</strong></span>
           <span className={`badge ${serverConfig.status === 'connected' ? 'badge-primary' : 'badge-red'}`} style={{ fontSize: '0.65rem' }}>
             {serverConfig.status === 'connected' ? 'Connected' : 'Offline'}
           </span>
         </button>
+
+        {/* Live Active Upload Progress Indicator */}
+        {uploadState?.isRunning && (
+          <button
+            onClick={onNavigateToUpload}
+            className="btn-secondary"
+            style={{
+              fontSize: '0.8125rem',
+              padding: '6px 12px',
+              borderColor: 'var(--primary)',
+              background: 'var(--bg-subtle)',
+              color: 'var(--primary)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer'
+            }}
+            title="Analisis sedang berjalan di latar belakang. Klik untuk membuka halaman upload."
+          >
+            <RefreshCw size={13} className="spin" />
+            <span>Analisis Video: <strong>{uploadState.progress}%</strong></span>
+          </button>
+        )}
 
         {/* Upload Video Button */}
         <button className="btn-primary" onClick={onOpenUploadModal} style={{ fontSize: '0.8125rem', padding: '6px 14px' }}>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Database, Upload, Shield, Server } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, totalCases }) {
+export default function Sidebar({ activeTab, setActiveTab, totalCases, uploadState }) {
   const menuItems = [
     { id: 'overview', label: 'Overview & Analytics', icon: LayoutDashboard },
     { id: 'database', label: 'Crash Database Library', icon: Database, count: totalCases },
@@ -56,11 +56,18 @@ export default function Sidebar({ activeTab, setActiveTab, totalCases }) {
                 <Icon size={16} color={isActive ? 'var(--primary)' : 'var(--text-muted)'} />
                 <span>{item.label}</span>
               </div>
-              {item.count !== undefined && (
-                <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }}>
-                  {item.count}
-                </span>
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {item.count !== undefined && (
+                  <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }}>
+                    {item.count}
+                  </span>
+                )}
+                {item.id === 'upload' && uploadState?.isRunning && (
+                  <span className="badge badge-primary pulse" style={{ fontSize: '0.6875rem' }}>
+                    {uploadState.progress}%
+                  </span>
+                )}
+              </div>
             </button>
           );
         })}

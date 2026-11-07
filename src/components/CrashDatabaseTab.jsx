@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Database, Search, Download, Eye } from 'lucide-react';
+import { Database, Search, Download, Eye, Trash2 } from 'lucide-react';
 import { CRASH_TYPES } from '../data/dummyCases';
 
-export default function CrashDatabaseTab({ cases, onSelectCase, onOpenUploadModal }) {
+export default function CrashDatabaseTab({ cases, onSelectCase, onDeleteCase }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPair, setFilterPair] = useState('ALL');
   const [filterCountry, setFilterCountry] = useState('ALL');
@@ -21,11 +21,99 @@ export default function CrashDatabaseTab({ cases, onSelectCase, onOpenUploadModa
   });
 
   const exportCsv = () => {
-    const rows = [['Case ID','Lokasi','Jenis kecelakaan','Pasangan','Kecepatan km/jam','Status kalibrasi'],
-      ...filteredCases.map(item=>[item.id,item.location,item.crashType,item.roadUserPair,item.variables?.impactSpeed ?? '',item.variables?.speedStatus ?? 'uncalibrated'])];
-    const csv = rows.map(row=>row.map(v=>`"${String(v ?? '').replaceAll('"','""')}"`).join(',')).join('\r\n');
-    const url = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-    const link = document.createElement('a'); link.href=url; link.download='anchor_vi_cases.csv'; link.click(); URL.revokeObjectURL(url);
+    const headers = [
+      'Case ID',
+      'Judul Kasus',
+      'Tanggal & Waktu',
+      'Lokasi CCTV',
+      'Negara',
+      'Cuaca',
+      'Pencahayaan',
+      'Kondisi Permukaan Jalan',
+      '1. Jenis Kejadian (Crash Scenario)',
+      'Kode Skenario',
+      '2. Pasangan Pengguna Jalan',
+      'Kendaraan 1 ID',
+      'Peran Kendaraan 1',
+      '3. Manuver Kendaraan 1',
+      'Kendaraan 2 ID',
+      'Peran Kendaraan 2',
+      '4. Manuver Kendaraan 2',
+      '5. Kecepatan V1 Pra-Kontak (km/jam)',
+      'Rata-rata V1 Sepanjang Video (km/jam)',
+      '6. Kecepatan V2 Pra-Kontak (km/jam)',
+      'Rata-rata V2 Sepanjang Video (km/jam)',
+      '7. Kecepatan Relatif (km/jam)',
+      '8. Kecepatan Impak / Closing Speed (km/jam)',
+      '9. Sudut Pendekatan (derajat)',
+      '10. Reaksi Menghindar',
+      '11. Titik Benturan (Point of Impact)',
+      '12. Indikasi Risiko Benturan (Severity)',
+      '13. Cuaca & Kondisi',
+      'Tingkat Keyakinan Klasifikasi',
+      'Status Kalibrasi Kamera',
+      'Rekomendasi Protokol ASEAN NCAP',
+      'Jumlah Sampel Kecepatan V1',
+      'Jumlah Sampel Kecepatan V2',
+      'Frame Vektor Pasangan Bersama',
+      'URL Video Analisis'
+    ];
+
+    const rows = filteredCases.map(item => {
+      const v = item.variables || {};
+      return [
+        item.id || '',
+        item.title || '',
+        item.timestamp || '',
+        item.location || '',
+        item.country || '',
+        item.weather || v.weather || '',
+        item.lighting || v.lighting || '',
+        item.roadSurface || v.roadSurface || '',
+        item.crashType || v.crashType || '',
+        v.crashTypeCode || '',
+        item.roadUserPair || v.roadUserPair || '',
+        v.vehicle1Id ?? '',
+        v.vehicle1Role || '',
+        v.vehicle1Maneuver || '',
+        v.vehicle2Id ?? '',
+        v.vehicle2Role || '',
+        v.vehicle2Maneuver || '',
+        v.vehicle1Speed ?? '',
+        v.vehicle1AverageSpeed ?? '',
+        v.vehicle2Speed ?? '',
+        v.vehicle2AverageSpeed ?? '',
+        v.relativeSpeed ?? '',
+        v.impactSpeed ?? '',
+        v.impactAngle ?? '',
+        v.evasiveAction || '',
+        v.pointOfImpact || '',
+        v.severityCategory || v.crashSeverity || '',
+        v.weather || item.weather || '',
+        v.classificationConfidence || '',
+        v.speedStatus || 'uncalibrated',
+        Array.isArray(item.suggestedProtocols) ? item.suggestedProtocols.join('; ') : (item.suggestedProtocols || ''),
+        v.vehicle1SpeedSampleCount ?? 0,
+        v.vehicle2SpeedSampleCount ?? 0,
+        v.pairSpeedSampleCount ?? 0,
+        item.videoUrl || ''
+      ];
+    });
+
+    const csvContent = [
+      headers,
+      ...rows
+    ].map(row => row.map(val => `"${String(val ?? '').replaceAll('"', '""')}"`).join(',')).join('\r\n');
+
+    // Tambahkan UTF-8 BOM (\uFEFF) agar Microsoft Excel membuka karakter dengan sempurna
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = `ANCHOR_VI_Crash_Database_${dateStr}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -120,6 +208,15 @@ export default function CrashDatabaseTab({ cases, onSelectCase, onOpenUploadModa
                 <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                   <button className="btn-secondary" onClick={() => onSelectCase(item)} style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
                     <Eye size={12} /> View Details
+                  </button>
+                  <button
+                    className="btn-secondary"
+                    onClick={() => onDeleteCase(item)}
+                    style={{ padding: '4px 10px', fontSize: '0.75rem', color: '#dc2626' }}
+                    title={`Hapus ${item.id}`}
+                    aria-label={`Hapus history ${item.id}`}
+                  >
+                    <Trash2 size={12} /> Delete
                   </button>
                 </td>
               </tr>

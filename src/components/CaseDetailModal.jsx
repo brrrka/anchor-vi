@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Activity, FileText } from 'lucide-react';
+import { X, Activity, FileText, Download } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const show = (value, suffix = '') => {
@@ -80,10 +80,32 @@ export default function CaseDetailModal({ selectedCase, onClose }) {
             <div className="clean-card" style={{ padding: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
                 <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-heading)' }}>Video CCTV dan penanda hasil analisis</span>
-                <button onClick={() => setShowVideoNote((v) => !v)} className="btn-secondary" style={{ padding: '3px 8px', fontSize: '0.72rem' }}>{showVideoNote ? 'Sembunyikan catatan' : 'Tampilkan catatan'}</button>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {selectedCase.videoUrl && (
+                    <a
+                      href={`${selectedCase.videoUrl}?download=true`}
+                      download={`ANCHOR_VI_${selectedCase.id || 'case'}.mp4`}
+                      className="btn-secondary"
+                      style={{ padding: '3px 8px', fontSize: '0.72rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      title="Download video MP4 teranotasi"
+                    >
+                      <Download size={12} /> Download Video
+                    </a>
+                  )}
+                  <button onClick={() => setShowVideoNote((v) => !v)} className="btn-secondary" style={{ padding: '3px 8px', fontSize: '0.72rem' }}>{showVideoNote ? 'Sembunyikan catatan' : 'Tampilkan catatan'}</button>
+                </div>
               </div>
               {selectedCase.videoUrl ? (
-                <video controls preload="metadata" src={selectedCase.videoUrl} style={{ width: '100%', maxHeight: '320px', background: '#0f172a', borderRadius: '6px' }} />
+                <video
+                  controls
+                  playsInline
+                  preload="auto"
+                  key={selectedCase.videoUrl}
+                  style={{ width: '100%', maxHeight: '340px', background: '#0f172a', borderRadius: '6px', display: 'block' }}
+                >
+                  <source src={selectedCase.videoUrl} type="video/mp4" />
+                  Browser Anda tidak mendukung pemutar video HTML5. Silakan download video menggunakan tombol di atas.
+                </video>
               ) : (
                 <div style={{ height: '220px', display: 'grid', placeItems: 'center', background: 'var(--bg-subtle)', borderRadius: '6px', color: 'var(--text-muted)' }}>Video hasil tidak tersedia</div>
               )}

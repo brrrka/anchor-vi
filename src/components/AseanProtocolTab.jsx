@@ -21,9 +21,16 @@ export default function AseanProtocolTab() {
             </p>
           </div>
 
-          <button className="btn-primary" disabled title="Katalog PDF belum tersedia; gunakan data hasil analisis aktual." style={{ fontSize: '0.8125rem' }}>
+          <a
+            href="/assets/download.pdf"
+            download="download.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+            style={{ fontSize: '0.8125rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
             <Download size={14} /> Download PDF Catalogue
-          </button>
+          </a>
         </div>
       </div>
 

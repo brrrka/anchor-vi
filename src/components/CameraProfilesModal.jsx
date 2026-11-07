@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Camera, CheckCircle, Trash2, X, Upload, MapPin, RefreshCw } from 'lucide-react';
+import { authFetch } from '../api';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 const VIEWS = [
@@ -28,7 +29,7 @@ export default function CameraProfilesModal({ onClose, onSaved }) {
 
   const refreshProfiles = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/cameras`);
+      const response = await authFetch(`${API_BASE}/api/cameras`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       setProfiles(data.cameras || []);
@@ -90,7 +91,7 @@ export default function CameraProfilesModal({ onClose, onSaved }) {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/cameras/${encodeURIComponent(cleanId)}`, {
+      const response = await authFetch(`${API_BASE}/api/cameras/${encodeURIComponent(cleanId)}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
       });
       const data = await response.json();
@@ -108,7 +109,7 @@ export default function CameraProfilesModal({ onClose, onSaved }) {
   const deleteProfile = async (id) => {
     if (!window.confirm(`Hapus profil kamera ${id}?`)) return;
     try {
-      const response = await fetch(`${API_BASE}/api/cameras/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const response = await authFetch(`${API_BASE}/api/cameras/${encodeURIComponent(id)}`, { method: 'DELETE' });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || `HTTP ${response.status}`);
       await refreshProfiles();

@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
 import { Check, Sun, Moon } from 'lucide-react';
+import { login } from '../api';
 
-export default function LoginPage({ onLoginSuccess, theme, onToggleTheme }) {
+export default function LoginPage({ onLoginSuccess, theme, onToggleTheme, apiBase }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
+    setError('');
+    try {
+      const user = await login(apiBase, username, password);
+      onLoginSuccess(user);
+    } catch (loginError) {
+      setError(loginError.message || 'Login gagal.');
+    } finally {
       setIsSubmitting(false);
-      onLoginSuccess({
-        name: username || 'Peneliti ANCHOR VI',
-        role: 'Research Team',
-        institution: 'Universitas Andalas & UMPSA',
-        email: username,
-        avatar: null,
-      });
-    }, 400);
+    }
   };
 
   return (
@@ -98,7 +99,7 @@ export default function LoginPage({ onLoginSuccess, theme, onToggleTheme }) {
         {/* Right Login Form */}
         <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '4px' }}>Sign In</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginBottom: '24px' }}>Gerbang akses sesungguhnya ada di Cloudflare Access sebelum request sampai ke sini; form ini hanya menyimpan nama tampilan di sesi browser, bukan autentikasi.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginBottom: '24px' }}>Login diverifikasi oleh backend ANCHOR VI.</p>
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -122,6 +123,7 @@ export default function LoginPage({ onLoginSuccess, theme, onToggleTheme }) {
                 required
               />
             </div>
+            {error && <p role="alert" style={{ color: '#dc2626', fontSize: '0.8rem', marginBottom: '12px' }}>{error}</p>}
 
             <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '10px' }} disabled={isSubmitting}>
               {isSubmitting ? 'Signing in...' : 'Sign In'}
